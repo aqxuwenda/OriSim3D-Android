@@ -29,6 +29,11 @@ public class ModelView extends Activity {
     view3d.setEGLConfigChooser(true);
     view3d.setRenderer(view3d);
     view3d.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+  	// Default
+		View3D.texturesON = true;
+		View3D.front = R.drawable.fee400x400; 
+		View3D.back = R.drawable.hulk400x400;
+		View3D.background = R.drawable.background256x256;
 
     setContentView(view3d);
     view3d.requestFocus();

@@ -3,7 +3,6 @@ package rk.or;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import android.util.FloatMath;
 
 /** 
  * Face to hold points, segments, normal, 
@@ -70,7 +69,7 @@ public class Face implements Serializable {
   /** Normalizes a vector
    * v[3] = v[3]/||v[3]|| */
   public static final void normalize(float v[]){
-    float d = FloatMath.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    float d = (float) Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     v[0] /= d;
     v[1] /= d;
     v[2] /= d;

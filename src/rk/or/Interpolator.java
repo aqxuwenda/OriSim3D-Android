@@ -1,7 +1,5 @@
 package rk.or;
 
-import android.util.FloatMath;
-
 /** 
  * Maps time to time 
  * interpolate(tn) returns t for tn. 
@@ -22,7 +20,7 @@ class LinearInterpolator implements Interpolator {
 /** Starts and ends slowly accelerate between "iad" */
 class AccelerateDecelerateInterpolator implements Interpolator {
   public float interpolate(float t) {
-    return ((FloatMath.cos((t + 1) * (float)Math.PI) / 2.0f) + 0.5f);
+    return (float) ((Math.cos((t + 1) * Math.PI) / 2.0f) + 0.5f);
   }
 }
 /** Model of a spring with overshoot "iso" */
