@@ -1,4 +1,4 @@
-package rk.or.android;
+package rk.or.cocotte;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

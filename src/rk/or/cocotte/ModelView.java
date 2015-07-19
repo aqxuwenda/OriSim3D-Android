@@ -1,4 +1,4 @@
-package rk.or.android;
+package rk.or.cocotte;
 
 import rk.or.Commands;
 import rk.or.Model;

@@ -1,6 +1,6 @@
 package rk.or;
 import android.view.MotionEvent;
-import rk.or.android.ModelView;
+import rk.or.cocotte.ModelView;
 
 /** 
  * Help View3D to deal with TouchEvents 

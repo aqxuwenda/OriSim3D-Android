@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import rk.or.android.ModelView;
+import rk.or.cocotte.ModelView;
 
 /** 
  * Commands are interpreted here 
