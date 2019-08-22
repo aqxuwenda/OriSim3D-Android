@@ -1,16 +1,9 @@
 apply plugin: 'com.android.application'
-// see https://developer.android.com/studio/publish/app-signing.html#secure-shared-keystore
-def keystorePropertiesFile = rootProject.file("../keystore.properties")
-def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
     signingConfigs {
-        release {
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
+        debug {
+            storeFile file('/Users/remi/.android/debug.keystore')
         }
     }
     compileSdkVersion 28
@@ -19,15 +12,14 @@ android {
         applicationId "rk.or.android"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 5
-        versionName "OriSim3D"
+        versionCode 6
+        versionName "OriSim3D-2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        signingConfig signingConfigs.release
     }
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -46,3 +38,18 @@ android {
     buildToolsVersion = '28.0.3'
 }
 
+dependencies {
+    testImplementation 'junit:junit:4.12'
+
+    // Core library
+    androidTestImplementation 'androidx.test:core:1.2.0'
+
+    // AndroidJUnitRunner and JUnit Rules
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.2.0'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test:rules:1.2.0'
+
+    // Assertions
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+}
