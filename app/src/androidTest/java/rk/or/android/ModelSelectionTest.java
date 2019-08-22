@@ -34,8 +34,10 @@ public class ModelSelectionTest {
     public void creation() {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("rk.or.android", appContext.getPackageName());
+
         Activity activity = activityRule.getActivity();
         assertNotNull(activity);
+
         Intent intent = activity.getIntent();
         assertEquals("intent:", "android.intent.action.MAIN", intent.getAction());
     }

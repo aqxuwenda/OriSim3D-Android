@@ -1,6 +1,7 @@
 package rk.or.android;
 
 import android.app.Activity;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.test.rule.ActivityTestRule;
@@ -22,6 +23,8 @@ public class View3DTest {
     public void init() {
         Activity activity = activityRule.getActivity();
         assertNotNull(activity);
+
+        Looper.prepare();
 
         ModelView modelView = (ModelView) activity;
         View3D view3d = new View3D(modelView);

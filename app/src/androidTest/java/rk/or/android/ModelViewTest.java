@@ -31,6 +31,7 @@ public class ModelViewTest {
 
         Activity activity = activityRule.getActivity();
         assertNotNull(activity);
+
         Intent intent = activity.getIntent();
         assertEquals("intent:", "android.intent.action.MAIN", intent.getAction());
         // And now, how to test click ?

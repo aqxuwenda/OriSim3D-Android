@@ -27,10 +27,12 @@ public class CommandTest {
     public void command() {
         ModelView modelView = (ModelView) activityRule.getActivity();
         assertNotNull(modelView);
+
         Commands c = new Commands(modelView);
         assertNotNull(c);
         assertEquals(Commands.State.idle, c.state);
-        c.command("a b t 2000 f 4 180 0) mo 2 0");
-        assertEquals(12,c.mainPane.model.points.size());
+
+        c.command("d -200 200 -200 -200 200 -200 200 200 b 0 2 c 0 2");
+        assertEquals(5,c.mainPane.model.points.size());
     }
 }

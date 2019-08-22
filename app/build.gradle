@@ -1,6 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('/Users/remi/.android/debug.keystore')
+        }
+    }
     compileSdkVersion 28
 
     defaultConfig {
