@@ -23,7 +23,9 @@ public class Face implements Serializable {
   }
   /** We Override to select face from existing faces */
   public boolean equals(Object obj) {
-	  return this.id == ((Face)obj).id;
+    if (!(obj instanceof Face))
+      return false;
+    return this.id == ((Face)obj).id;
   }
 	/** Compute Face normal */
   public float[] computeFaceNormal() {
@@ -62,7 +64,7 @@ public class Face implements Serializable {
   }
   /** Normalizes a vector
    * v[3] = v[3]/||v[3]|| */
-  public static void normalize(float v[]){
+  public static void normalize(float[] v){
     float d = (float) java.lang.Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     v[0] /= d;
     v[1] /= d;

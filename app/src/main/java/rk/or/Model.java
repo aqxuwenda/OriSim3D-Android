@@ -95,7 +95,7 @@ public class Model implements Serializable {
   }
   /** Split faces by a plane Perpendicular to a Segment passing by a Point "p" */
   public void splitOrtho(Segment s, Point p, List<Face> list) {
-    Plane pl = new Plane().ortho(s, p);
+    Plane pl = new Plane().orthogonal(s, p);
     splitFacesByPlane(pl,list);
   }
   /** Split faces by a plane between two segments given by 3 points */
@@ -418,7 +418,7 @@ public class Model implements Serializable {
   public void offsetDecal(float dcl, List<Face> list) {
   	list = list.size() == 0 ? faces : list;
   	float max = dcl < 0 ? -1000 : 1000;
-  	float o = 0;
+  	float o;
   	for (Face f : list) {
     	f.computeFaceNormal();
   		o = f.offset * (f.normal[2] >= 0 ? 1 : -1);
@@ -461,7 +461,7 @@ public class Model implements Serializable {
   }
   /** Split face f by plane pl and add Points to joint faces (public for test) */
   private void splitOneFaceByPlane(Face f1, Plane pl) {
-    Point i = null;
+    Point i;
     Point p1 = null, p2 = null;
     List<Point> frontSide = new LinkedList<Point>(); // Front side
     List<Point> backSide = new LinkedList<Point>(); // Back side
@@ -501,8 +501,8 @@ public class Model implements Serializable {
   				else System.out.println("Three intersections:"+p1+" "+p2+" "+p);
   				// Check
   				if (pl.classifyPointToPlane(p) != 0)
-  					System.out.println("Intersection not in plane ! p:"+p);;
-  			} else if (aSide == 0) {  			
+  					System.out.println("Intersection not in plane ! p:"+p);
+            } else if (aSide == 0) {
   				// c2) 'b' in front, 'a' on 
   				// Keep last point 'a' for the new segment 
   				// leaving thickness
@@ -787,18 +787,18 @@ public class Model implements Serializable {
   }
   // --------------------- DEBUG ------------
   public String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb.append("Points["+points.size()+"] : ");
+    StringBuilder sb = new StringBuilder();
+    sb.append("Points[").append(points.size()).append("] : ");
     for (Point p : points) {
       sb.append(p).append("\n");
     }
-    sb.append("Segments["+segments.size()+"] : ");
+    sb.append("Segments[").append(segments.size()).append("] : ");
     for (Segment s : segments) {
-      sb.append(s).append("\n");;
+      sb.append(s).append("\n");
     }
-    sb.append("Faces["+faces.size()+"] : ");
+    sb.append("Faces[").append(faces.size()).append("] : ");
     for (Face f : faces) {
-      sb.append(f).append("\n");;
+      sb.append(f).append("\n");
     }
     return sb.toString();
   }

@@ -7,6 +7,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -20,6 +21,7 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import rk.or.Commands;
 import rk.or.Face;
 import rk.or.Model;
 import rk.or.Point;
@@ -43,15 +45,16 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
     private float mLastX, mLastY;
     private static final int INVALID_POINTER_ID = -1;
     private int activePointerId = INVALID_POINTER_ID;
-    private final ScaleGestureDetector mScaleDetector;
-    private final GestureDetector mDoubleTapDetector;
+    private  ScaleGestureDetector mScaleDetector;
+    private  GestureDetector mDoubleTapDetector;
     private boolean running = true;
 
     // Flag to rebuild buffers
-    public static boolean needRebuild = true;
+    public boolean needRebuild = false;
 
     // Needed to access model
-    private final ModelView mMainPane;
+    public Model model;
+    public Commands commands;
 
     // Texture size, set in initTextures, used in initBuffers
     private float wTexFront = 0, hTexFront = 0;
@@ -77,8 +80,13 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
     // View3D shows and does Rendering
     public View3D(Context context) {
         super(context);
-        mMainPane = (ModelView) context;
-
+        init(context);
+    }
+    public View3D(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
+    }
+    private void init(Context context) {
         // Create an OpenGL ES 2.0 context
         setEGLContextClientVersion(2);
         setRenderer(this);
@@ -113,13 +121,13 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
         public boolean onSingleTapConfirmed(MotionEvent e) {
             if (running) {
                 // Simple tap, switch to pause, if running
-                mMainPane.commands.command("pa"); // Pause
-                Toast toast = Toast.makeText(mMainPane, "Pause", Toast.LENGTH_SHORT);
+                View3D.this.commands.command("pa"); // Pause
+                Toast toast = Toast.makeText(getContext(), "Pause", Toast.LENGTH_SHORT);
                 toast.show();
             } else {
                 // Simple tap continue, if paused
-                mMainPane.commands.command("co"); // Continue
-                Toast toast = Toast.makeText(mMainPane, "Continue", Toast.LENGTH_SHORT);
+                View3D.this.commands.command("co"); // Continue
+                Toast toast = Toast.makeText(getContext(), "Continue", Toast.LENGTH_SHORT);
                 toast.show();
             }
             running = !running;
@@ -163,7 +171,7 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
                     final float dx = (x - mLastX);
                     final float dy = (y - mLastY);
 
-                    // Dividing by 4 enougth to flip 180°
+                    // Dividing by 4 enough to flip 180°
                     mAngleX += dx / 4.0f;
                     mAngleY += dy / 4.0f;
                 }
@@ -207,7 +215,10 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
     }
     // Get rid of inspection warning.
     @Override
-    public boolean performClick(){super.performClick(); return true;}
+    public boolean performClick(){
+        super.performClick();
+        return true;
+    }
 
     // ------ GLES20 part ------
     // Called by system
@@ -282,7 +293,7 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
         // Create Front texture
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inScaled = false; // Tricky, images are resized on real phone
-        Bitmap frontTex = BitmapFactory.decodeResource(mMainPane.getResources(), R.drawable.hulk400x566, opts); // R.drawable.front
+        Bitmap frontTex = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.hulk400x566, opts); // R.drawable.front
         wTexFront = frontTex.getWidth();
         hTexFront = frontTex.getHeight();
         // Bind to textureFront [0]
@@ -295,7 +306,7 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
         frontTex.recycle();
 
         // Create Back texture
-        Bitmap backTex = BitmapFactory.decodeResource(mMainPane.getResources(), R.drawable.ville400x565, opts); // R.drawable.back
+        Bitmap backTex = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.ville400x565, opts); // R.drawable.back
         wTexBack = backTex.getWidth();
         hTexBack = backTex.getHeight();
         // Bind to textureBack [1]
@@ -308,7 +319,7 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
         backTex.recycle();
 
         // Create Background texture
-        Bitmap backgroundTex = BitmapFactory.decodeResource(mMainPane.getResources(), R.drawable.background256x256, opts);
+        Bitmap backgroundTex = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.background256x256, opts);
         // Bind to texture [2]
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[2]);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
@@ -360,7 +371,7 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
     }
 
     // Initialize from model
-    public void initBuffers(Model model) {
+    public void initBuffers() {
         nbPts = 0;
         for (Face f : model.faces) {
             for (int i = 2; i < f.points.size(); i++)
@@ -562,7 +573,7 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
 
         // Initialize from model, if needed
         if (needRebuild) {
-            initBuffers(mMainPane.model);
+            initBuffers();
         }
 
         // Set projection matrix
@@ -637,20 +648,19 @@ public class View3D extends GLSurfaceView implements GLSurfaceView.Renderer {
         GLES20.glVertexAttribPointer(hlv, 3, GLES20.GL_FLOAT, true, 0, lineVertex); // 3 coords, 4 bytes per vertex
         // Color Hack to tell the fragment shader to use uColor (w = 1)
         int hlc = GLES20.glGetUniformLocation(program, "uColor");
-        GLES20.glUniform4f(hlc, 0.0f,0.0f,0.0f,1.0f);
+        GLES20.glUniform4f(hlc, 0.0f, 0.0f, 0.0f, 1.0f);
 
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, nbPtsLines);
 
         // Hack to tell the fragment shader not to use uColor (w = 0)
-        GLES20.glUniform4f(hlc, 0.0f,0.0f,0.0f,0.0f);
+        GLES20.glUniform4f(hlc, 0.0f, 0.0f, 0.0f, 0.0f);
 
         // Should I call glDisableVertexAttribArray ?
 
-        // Calls commands.animationInProgress() to know if anim should continue
-        if (mMainPane.commands.anim()){
+        // Call commands.animationInProgress() to know if anim should continue
+        if (commands.anim()) {
             needRebuild = true;
             requestRender();
         }
-
     }
 }

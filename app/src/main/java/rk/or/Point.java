@@ -41,11 +41,8 @@ public class Point implements Comparable<Point>, Serializable {
     this.x = x;  this.y = y;  this.z = 0;
     this.xf = x;   
     this.yf = y;
-    this.x = x;   
-    this.y = y;    
-    this.z = 0;
     this.id = id;
-		return this;
+    return this;
   }
   public Point setFromPointId(Point v, int id) {
     this.x = v.x;  this.y = v.y;  this.z = v.z;
@@ -81,14 +78,16 @@ public class Point implements Comparable<Point>, Serializable {
   }
   /** Override to select point from existing points */
   public boolean equals(Object p) {
-	  return this.id == ((Point)p).id;
+    if (!(p instanceof Point))
+      return false;
+    return this.id == ((Point)p).id;
   }
   /** Compares two points in 3D
    * @return 0 if closer than 3 pixels */
   public float compareTo(float x, float y, float z) {
-    float dx2 = (float) Math.abs((this.x - x)*(this.x - x));
-    float dy2 = (float) Math.abs((this.y - y)*(this.y - y));
-    float dz2 = (float) Math.abs((this.z - z)*(this.z - z));
+    float dx2 = Math.abs((this.x - x)*(this.x - x));
+    float dy2 = Math.abs((this.y - y)*(this.y - y));
+    float dz2 = Math.abs((this.z - z)*(this.z - z));
     float d = (float) Math.sqrt(dx2 + dy2 + dz2);
     if (d > 3) // Points closer than 3 pixels are considered the same 
     	return d;
@@ -100,8 +99,8 @@ public class Point implements Comparable<Point>, Serializable {
   }
   /** Compare this point with x,y in 2D */
   public float compareTo(float x, float y) {
-    float dx2 = (float) Math.abs((this.xf - x)*(this.xf - x));
-    float dy2 = (float) Math.abs((this.yf - y)*(this.yf - y));
+    float dx2 = Math.abs((this.xf - x)*(this.xf - x));
+    float dy2 = Math.abs((this.yf - y)*(this.yf - y));
     float d = (float) Math.sqrt(dx2 + dy2);
     if (d > 3.0f) // Points closer than 3 pixels are the same
     	return d;
