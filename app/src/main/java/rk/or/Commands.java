@@ -1,13 +1,11 @@
 package rk.or;
 
-import android.util.Log;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -15,23 +13,17 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import rk.or.android.ModelView;
-import rk.or.AccelerateDecelerateInterpolator;
-import rk.or.AnticipateInterpolator;
-import rk.or.AnticipateOvershootInterpolator;
-import rk.or.BounceInterpolator;
-import rk.or.GravityBounceInterpolator;
-import rk.or.LinearInterpolator;
-import rk.or.OvershootInterpolator;
-import rk.or.SpringBounceInterpolator;
-import rk.or.SpringOvershootInterpolator;
+import rk.or.android.MainActivity;
+import rk.or.android.View3D;
 
 /**
  * Commands are interpreted here
  * deals with animation, undo, pause with a state machine
  */
 public class Commands {
-  public ModelView mainPane;
+  // References
+  public Model model;
+  public View3D view3d;
   // Serialized model to undo
   private LinkedList<byte[]> undo;
   // Done Commands
@@ -40,7 +32,7 @@ public class Commands {
   public enum State {idle, run, anim, pause, undo};
   /** { idle, run, anim, pause, undo }; */
   public State state = State.idle;
-	private boolean undoInProgress = false;
+  private boolean undoInProgress = false;
   // Folding command and index in command[] and no scanned
   private String[] todo;
   private int iTok, p, iBeginAnim;
@@ -58,8 +50,7 @@ public class Commands {
   private float kOffset = 0.2f; // 0.2f for real rendering
 
   /** Constructor initialize linked list */
-  public Commands(ModelView panel) {
-    mainPane = panel;
+  public Commands(MainActivity activity, Model model, View3D view3d) {
     undo = new LinkedList<byte[]>();
     done = new LinkedList<String>() ;
     state = State.idle;
@@ -67,6 +58,7 @@ public class Commands {
 
   /** Main entry point on state machine */
   public synchronized void command(String cde){
+
 // -- State Idle tokenize list of command
     if (state == State.idle) {
       if (cde.equals("u")) {
@@ -116,7 +108,7 @@ public class Commands {
         pauseDuration = System.currentTimeMillis() - pauseStart;
         // Continue animation
           state = State.anim;
-          mainPane.view3d.requestRender();
+          view3d.requestRender();
       } else if (cde.equals("u")) {
       	// Undo one step
         state = State.undo;
@@ -126,7 +118,7 @@ public class Commands {
     }
 // -- State undo
     if (state == State.undo) {
-    	if (undoInProgress == false){
+    	if (!undoInProgress){
     		if (cde.equals("u")) {
     			// Ok continue to undo
     			undo();
@@ -138,18 +130,17 @@ public class Commands {
     			// Forbidden ignore pause
     		}
     	}
-      return;
     }
   }
 
   /** Loop to execute commands */
-  public void commandLoop() {
+  private void commandLoop() {
     while (iTok < todo.length) {
       // Breaks loop to launch animation on 't'
       if (todo[iTok].equals("t")) {
       	// Mark
-  			pushUndo();
-    	  // Time t duration ... )
+        pushUndo();
+        // Time t duration ... )
         done.addFirst(todo[iTok++]);
         // iTok will be incremented by duration = get()
         done.addFirst(todo[iTok]);
@@ -175,21 +166,23 @@ public class Commands {
       while (iBefore < iReached) {
         done.addFirst(todo[iBefore++]);
       }
-      mainPane.view3d.requestRender();
+      view3d.requestRender();
     }
     // End of command line switch to idle
     if (state == State.run){
       state = State.idle;
     }
   }
-  /**  Tells View3D to requestRender() */
-  public void animStart() {
+
+  /**  Tells view3d to requestRender() */
+  private void animStart() {
       tstart = System.currentTimeMillis();
       // After each onDrawFrame() View3D calls anim() and if true calls requestRender()
       tpi = 0.0f;
       // Launch animation
-      mainPane.view3d.requestRender();
+      view3d.requestRender();
   }
+
   /** Called from View3D at each redraw
    *  return true if anim should continue false if anim should end */
   public boolean anim() {
@@ -199,7 +192,7 @@ public class Commands {
       // Stop undo if undo mark reached and switch to repaint
       if (ret == false) {
       	undoInProgress  = false;
-      	mainPane.view3d.requestRender();
+      	view3d.requestRender();
       }
       return ret;
     } else if (state == State.pause) {
@@ -210,7 +203,7 @@ public class Commands {
     }
     long t = System.currentTimeMillis();
     // Compute tn varying from 0 to 1
-    float tn = (t-tstart-pauseDuration)/(float)duration; // tn from 0 to 1
+    float tn = (t - tstart - pauseDuration) / (float) duration; // tn from 0 to 1
     if (tn > 1.0f)
       tn = 1.0f;
     tni = interpolator.interpolate(tn);
@@ -249,6 +242,7 @@ public class Commands {
     iTok = iBeginAnim;
     return true;
   }
+
   /** Undo */
   private void undo() {
     if (undo.size() == 0) {
@@ -272,13 +266,15 @@ public class Commands {
     state = State.undo;
   	undoInProgress = true;
     // Launch animation to popUndo until iTok reached
-    mainPane.view3d.requestRender();
+    view3d.requestRender();
   }
+
   /** Push undo */
   private void pushUndo() {
-    undo.addFirst(mainPane.model.getSerialized());
+    undo.addFirst(model.getSerialized());
     undo.addFirst(getSerialized(done.size()));
   }
+
   /** Serial encoder for index in todo string.
    * Returns byte[] array with one Integer for the int parameter */
   private byte[] getSerialized(int i) {
@@ -294,6 +290,7 @@ public class Commands {
     }
     return bs.toByteArray();
   }
+
   /** Serial decoder for index
    * Returns int from the byte[] array  parameter */
   private int deserialize(byte[] buf) {
@@ -309,6 +306,7 @@ public class Commands {
     }
     return ret.intValue();
   }
+
   /** Pop undo index, model and return index */
   private int popUndo() {
     byte[] index = undo.poll();
@@ -318,17 +316,18 @@ public class Commands {
     ObjectInputStream dec;
     try {
       dec = new ObjectInputStream(bais);
-      mainPane.model = (Model) dec.readObject();
+      this.model = (Model) dec.readObject();
       dec.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
     return deserialize(index);
   }
+
   /** Execute one command token on model */
-  public int execute() {
-    // Work on mainPane model
-    Model model = mainPane.model;
+  private int execute() {
+    // Work on this model
+//    Model model = this.model;
     // Commands
     if (todo[iTok].equals("d")) { // "d : define"
       // Define sheet by 4 points x,y CCW
@@ -381,7 +380,7 @@ public class Commands {
       // Rotate Seg Angle Points with animation
       iTok++;
       Segment s = model.segments.get((int) get());
-      float angle = (float) (get() * (tni - tpi));
+      float angle = get() * (tni - tpi);
       model.rotate(s, angle, listPoints(model));
     } else if (todo[iTok].equals("f")){ // "f : fold to angle"
       iTok++;
@@ -543,17 +542,18 @@ public class Commands {
     }
     return iTok;
   }
-	/** Make a list from following points numbers */
-	private List<Point> listPoints(Model model) {
+
+  /** Make a list from following points numbers */
+  private List<Point> listPoints(Model model) {
 	  List<Point> list = new LinkedList<Point>();
-	  while (!Float.isNaN(get()))
-	    try {
-	      list.add(model.points.get(p));
+	  while (!Float.isNaN(get())) try {
+        list.add(model.points.get(p));
       } catch (Exception e) {
-      	System.out.println("Ignore Point:"+p);
+        System.out.println("Ignore Point:" + p);
       }
 	  return list;
   }
+
   /** Make a list from following segments numbers */
   private List<Segment> listSegments(Model model) {
 	  List<Segment> list = new LinkedList<Segment>();
@@ -565,13 +565,15 @@ public class Commands {
       }
 	  return list;
   }
+
   /** Make a list from following faces numbers */
-	private List<Face> listFaces(Model model) {
-		List<Face> list = new LinkedList<Face>();
-		while (!Float.isNaN(get()))
-		  list.add(model.faces.get(p));
-		return list;
-	}
+  private List<Face> listFaces(Model model) {
+      List<Face> list = new LinkedList<Face>();
+      while (!Float.isNaN(get()))
+        list.add(model.faces.get(p));
+      return list;
+  }
+
   /** Tokenize, split the String in Array of String */
   private String[] tokenize(String input) {
     ArrayList<String> matchList = new ArrayList<String>();
@@ -615,6 +617,7 @@ public class Commands {
     // Construct result
     return matchList.toArray(new String[0]);
   }
+
   /** Helper to get token. Returns float and set p as int */
   private float get() {
     try {

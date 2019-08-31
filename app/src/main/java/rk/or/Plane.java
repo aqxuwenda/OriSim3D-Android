@@ -24,7 +24,7 @@ public class Plane {
     return this;
   }
   /** Plane orthogonal to Segment and passing by Point */
-  public  Plane ortho(Segment s, Point p){
+  public  Plane orthogonal(Segment s, Point p){
     n = new Point().setFrom3D(s.p2.x-s.p1.x, s.p2.y-s.p1.y, s.p2.z-s.p1.z);
     d = p.dot(n);
     return this;

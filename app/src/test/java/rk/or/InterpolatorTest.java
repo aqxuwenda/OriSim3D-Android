@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class InterpolatorTest {
-    private static float delta = 0.001f;
+    private static final float delta = 0.001f;
 
     @Test
     public void LinearInterpolator() {
