@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         debug {
-            storeFile file('/Users/remi/.android/debug.keystore')
+            storeFile file('../../../.android/debug.keystore')
         }
     }
     compileSdkVersion 29
